@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+
+# Environment & secrets
+.env
+backend/.env
+.env.local
+.env.*.local
+
+# Build output
+frontend/dist/
+backend/dist/
+
+# Database
+*.sqlite
+*.sqlite-journal
+
+# Uploads (temp files)
+backend/uploads/
+
+# Test / temp files
+*.pdf
+!backend/.env.example
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
