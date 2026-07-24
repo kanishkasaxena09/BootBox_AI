@@ -12,6 +12,13 @@ const calcController = require('../controllers/calcController');
 const compressController = require('../controllers/compressController');
 const feedbackController = require('../controllers/feedbackController');
 const adminController = require('../controllers/adminController');
+const interviewController = require('../controllers/interviewController');
+const coverletterController = require('../controllers/coverletterController');
+const corporateController = require('../controllers/corporateController');
+const emailController = require('../controllers/emailController');
+const linkedinController = require('../controllers/linkedinController');
+const excuseController = require('../controllers/excuseController');
+const resignationController = require('../controllers/resignationController');
 
 // --- Career Routes ---
 router.post('/career/resume/generate', careerController.generateEnhancedResume);
@@ -47,5 +54,28 @@ router.post('/admin/visitor', adminController.logVisitor);
 router.get('/admin/analytics', verifyAdminToken, adminController.getAnalytics);
 router.post('/admin/settings', verifyAdminToken, adminController.updateSetting);
 router.delete('/admin/feedback/:id', verifyAdminToken, adminController.deleteFeedback);
+
+// --- Interview Routes ---
+router.post('/interview/generate-questions', interviewController.generateQuestions);
+router.post('/interview/evaluate', interviewController.evaluateAnswer);
+
+// --- Cover Letter Routes ---
+router.post('/coverletter/generate', coverletterController.generate);
+router.post('/coverletter/improve', coverletterController.improve);
+
+// --- Corporate Translator Routes ---
+router.post('/corporate/translate', corporateController.translate);
+
+// --- Email Generator Routes ---
+router.post('/email/generate', emailController.generate);
+
+// --- LinkedIn Routes ---
+router.post('/linkedin/generate', linkedinController.generate);
+
+// --- Excuse Generator Routes ---
+router.post('/excuse/generate', excuseController.generate);
+
+// --- Resignation Routes ---
+router.post('/resignation/generate', resignationController.generate);
 
 module.exports = router;

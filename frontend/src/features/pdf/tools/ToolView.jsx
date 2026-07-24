@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Sparkles, Copy, Download } from 'lucide-react';
+import { Sparkles, Copy, Download } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Dropzone from '../../../components/Dropzone';
 import Loader from '../../../components/Loader';
@@ -72,20 +72,14 @@ const ToolView = ({ tool, onBack, onRun, children, showDropzone = true, multiple
       {loading && <Loader message={loadingMessage} />}
 
       <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 15 }} className="max-w-2xl mx-auto glass-panel p-6 rounded-2xl space-y-6 border border-[var(--border-color)]">
-        <div className="flex justify-between items-start">
-          <div className="space-y-1">
-            <div className="flex items-center space-x-2">
-              <div className="p-2 bg-pink-500/10 rounded-lg text-pink-600">
-                <tool.icon className="h-5 w-5" />
-              </div>
-              <h3 className="text-lg font-bold text-[var(--text-primary)]">{tool.name}</h3>
+        <div className="space-y-1">
+          <div className="flex items-center space-x-2">
+            <div className="p-2 bg-pink-500/10 rounded-lg text-pink-600">
+              <tool.icon className="h-5 w-5" />
             </div>
-            <p className="text-xs text-[var(--text-secondary)] leading-relaxed pr-6">{tool.desc}</p>
+            <h3 className="text-lg font-bold text-[var(--text-primary)]">{tool.name}</h3>
           </div>
-          <button onClick={onBack} className="text-xs font-bold text-[var(--text-primary)] hover:text-pink-600 bg-[var(--bg-secondary)] hover:bg-pink-200 px-3.5 py-2 rounded-xl transition-all flex items-center space-x-1.5 shadow-sm">
-            <ArrowLeft className="h-4 w-4" />
-            <span>Back to Tools</span>
-          </button>
+          <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{tool.desc}</p>
         </div>
 
         <div className="space-y-4">

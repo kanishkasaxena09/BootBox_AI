@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   FileText, Merge, Scissors, FolderArchive, FileDown, Sparkles, Image,
   RotateCw, Columns, FileSpreadsheet, Presentation
@@ -60,12 +60,12 @@ const toolComponents = {
   'summarizer': AiSummarizer
 };
 
-const PdfSuite = () => {
-  const [activeToolId, setActiveToolId] = useState(null);
+const PdfSuite = ({ path, onNavigate }) => {
+  const activeToolId = path[1] || null;
 
   if (activeToolId) {
     const ToolComponent = toolComponents[activeToolId];
-    return <ToolComponent onBack={() => setActiveToolId(null)} />;
+    return <ToolComponent />;
   }
 
   return (
@@ -85,10 +85,10 @@ const PdfSuite = () => {
             const Icon = tool.icon;
             return (
               <motion.div
-                whileHover={{ y: -4, boxShadow: '0 12px 30px -5px rgba(157, 23, 77, 0.05), 0 8px 12px -6px rgba(157, 23, 77, 0.05)' }}
+                whileHover={{ y: -4 }}
                 key={tool.id}
-                onClick={() => setActiveToolId(tool.id)}
-                className="glass-panel border border-[var(--border-color)] p-6 md:p-8 rounded-[24px] cursor-pointer transition-all flex flex-col justify-between text-left space-y-4 shadow-sm"
+                onClick={() => onNavigate(tool.id)}
+                className="card-hover-border glass-panel border border-[var(--border-color)] p-6 md:p-8 rounded-[24px] cursor-pointer transition-all flex flex-col justify-between text-left space-y-4 shadow-sm"
               >
                 <div className="space-y-4">
                   <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white ${tool.iconBg} shadow-md`}>

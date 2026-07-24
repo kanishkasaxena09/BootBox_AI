@@ -8,7 +8,13 @@ const AdmZip = require('adm-zip');
 const PptxGenJS = require('pptxgenjs');
 const ExcelJS = require('exceljs');
 const pdfjsLib = require('pdfjs-dist');
-const { createCanvas } = require('@napi-rs/canvas');
+let createCanvas;
+try {
+  createCanvas = require('@napi-rs/canvas').createCanvas;
+} catch (e) {
+  console.warn('WARN: @napi-rs/canvas unavailable, canvas-based features will be limited:', e.message);
+  createCanvas = null;
+}
 
 // Clean up helper
 const cleanupFile = (filePath) => {
@@ -172,7 +178,8 @@ async function pdfToJpg(filePath) {
     const page = await doc.getPage(i);
     const viewport = page.getViewport({ scale });
 
-    const canvas = createCanvas(viewport.width, viewport.height);
+    const canvas = createCanvas ? createCanvas(viewport.width, viewport.height) : null;
+    if (!canvas) throw new Error('Canvas rendering unavailable — @napi-rs/canvas not installed');
     const ctx = canvas.getContext('2d');
 
     ctx.fillStyle = '#FFFFFF';

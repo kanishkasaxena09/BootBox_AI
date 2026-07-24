@@ -4,8 +4,8 @@ import { User, Briefcase, GraduationCap, Award, AwardIcon, Sparkles, CheckCircle
 import Dropzone from '../../components/Dropzone';
 import Loader from '../../components/Loader';
 
-const CareerToolkit = () => {
-  const [activeSubTab, setActiveSubTab] = useState('builder'); // 'builder' or 'ats'
+const CareerToolkit = ({ initialTab }) => {
+  const [activeSubTab, setActiveSubTab] = useState(initialTab === 'ats' ? 'ats' : 'builder');
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
 
