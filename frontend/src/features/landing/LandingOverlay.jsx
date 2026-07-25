@@ -1,9 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Database, Wrench, TrendingUp, LayoutDashboard } from 'lucide-react';
+import { Search, Database, Wrench, TrendingUp } from 'lucide-react';
 
 const modules = [
-  { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard, desc: 'View your activity, stats, and recent actions across all tools.', color: 'from-pink-500 to-rose-500' },
   { id: 'sol-database', name: 'SOL Database', icon: Database, desc: 'All semester organized resources, notes, PPT, assignments, case studies.', color: 'from-blue-500 to-indigo-500' },
   { id: 'tools', name: 'Tools', icon: Wrench, desc: 'Resume builder, career tests, interview prep, study planner and other essential tools.', color: 'from-pink-500 to-rose-500' },
   { id: 'skills', name: 'Skills & Development', icon: TrendingUp, desc: 'Skill assessment, learning paths, certifications, and personal development resources.', color: 'from-emerald-500 to-teal-500' },
@@ -145,7 +144,7 @@ const LandingOverlay = ({ onNavigate }) => {
           {/* Module Cards */}
           <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.25 }}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {modules.map((mod, i) => {
               const Icon = mod.icon;
               return (

@@ -4,7 +4,6 @@ import LandingOverlay from './features/landing/LandingOverlay';
 import ToolsHub from './features/tools/ToolsHub';
 import AdminDashboard from './features/admin/AdminDashboard';
 import FeedbackPage from './features/feedback/FeedbackPage';
-import Dashboard from './features/dashboard/Dashboard';
 import { SolDatabase, SkillsDevelopment } from './features/soldatabase/Placeholders';
 import AboutUs from './features/about/AboutUs';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -72,8 +71,6 @@ function App() {
         return <AboutUs />;
       case 'feedback':
         return <FeedbackPage />;
-      case 'dashboard':
-        return <Dashboard onNavigate={handleNavigate} />;
       case 'admin':
         return <AdminDashboard onLogout={handleAdminLogout} />;
       default:

@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
 
 const navLinks = [
-  { id: 'dashboard', label: 'Dashboard' },
   { id: 'sol-database', label: 'Database' },
   { id: 'tools', label: 'Tools' },
   { id: 'skills', label: 'Skills & Development' },

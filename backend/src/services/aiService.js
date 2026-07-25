@@ -528,7 +528,57 @@ async function generateResignationAI(type, inputs) {
   }
 }
 
+/**
+ * 13. AI Text Humanizer
+ * Rewrites AI-generated text to sound natural and human-written
+ */
+async function humanizeTextAI(text, tone) {
+  if (!isAiEnabled) return null;
+  try {
+    const toneInstructions = {
+      professional: 'Rewrite in a polished, professional workplace tone. Use clear, direct language. Avoid jargon but keep it formal.',
+      student: 'Rewrite in a simple, clear student tone. Use everyday words, short sentences. Write like a smart student explaining something.',
+      casual: 'Rewrite in a relaxed, conversational tone. Use contractions, informal phrasing, and a friendly vibe. Write like you are texting a friend.',
+      academic: 'Rewrite in a scholarly, precise academic tone. Use formal vocabulary, varied sentence structure, and maintain intellectual rigor.',
+      business: 'Rewrite in a corporate, action-oriented tone. Be direct, results-focused, and use strong verbs. Get to the point.',
+      creative: 'Rewrite in an expressive, vivid tone. Use interesting word choices, varied rhythm, and make it engaging to read.',
+    };
+
+    const toneGuide = toneInstructions[tone] || toneInstructions.professional;
+
+    const prompt = `You are an expert human writer. Your job is to completely rewrite AI-generated text so it sounds genuinely human-written.
+
+RULES:
+- Completely rewrite the text — do NOT keep the same sentence structure
+- Vary sentence length (mix short punchy sentences with longer ones)
+- Add natural transitions between ideas
+- Use specific, concrete language instead of vague buzzwords
+- Remove ALL AI-typical words: "delve", "leverage", "holistic", "robust", "pivotal", "fostering", "synergy", "comprehensive", "innovative", "cutting-edge", "seamless", "transformative", "myriad", "plethora", "meticulous", "tapestry", "landscape", "harnessing", "unprecedented", "moreover", "furthermore", "consequently", "utilize", "streamline", "optimize", "enhance"
+- Remove filler phrases: "it is worth noting", "it goes without saying", "in today's world", "in the realm of", "when it comes to", "in order to", "paving the way"
+- Do NOT add a disclaimer, note, or meta-commentary about the rewrite
+- Preserve the original meaning exactly
+- Keep the same paragraph count approximately
+- Output ONLY the rewritten text, nothing else
+
+TONE: ${toneGuide}
+
+TEXT TO REWRITE:
+---
+${text}
+---
+
+Rewrite now:`;
+
+    const result = await queryGroq(prompt, false);
+    return result;
+  } catch (error) {
+    console.error('Failed to humanize text via AI:', error.message);
+    return null;
+  }
+}
+
 module.exports = {
+  queryGroq,
   enhanceResumeData,
   analyzeResumeATS,
   summarizeText,
@@ -541,4 +591,5 @@ module.exports = {
   generateLinkedInContent,
   generateExcuseAI,
   generateResignationAI,
+  humanizeTextAI,
 };

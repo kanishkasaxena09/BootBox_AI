@@ -19,6 +19,9 @@ const emailController = require('../controllers/emailController');
 const linkedinController = require('../controllers/linkedinController');
 const excuseController = require('../controllers/excuseController');
 const resignationController = require('../controllers/resignationController');
+const studyController = require('../controllers/studyController');
+const flashcardController = require('../controllers/flashcardController');
+const humanizeController = require('../controllers/humanizeController');
 
 // --- Career Routes ---
 router.post('/career/resume/generate', careerController.generateEnhancedResume);
@@ -77,5 +80,18 @@ router.post('/excuse/generate', excuseController.generate);
 
 // --- Resignation Routes ---
 router.post('/resignation/generate', resignationController.generate);
+
+// --- Study Companion Routes ---
+router.post('/study/generate', studyController.generateStudyContent);
+router.post('/study/chat', studyController.studyChat);
+router.post('/study/regenerate', studyController.regenerateSection);
+
+// --- Flashcard Routes ---
+router.post('/flashcard/generate', flashcardController.generateFromTopic);
+router.post('/flashcard/file', uploadAny, flashcardController.extractFromFile);
+router.post('/flashcard/notes', flashcardController.generateFromText);
+
+// --- Text Humanizer Routes ---
+router.post('/humanize', humanizeController.humanize);
 
 module.exports = router;
