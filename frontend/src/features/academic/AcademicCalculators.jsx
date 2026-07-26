@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator, Award, Plus, Trash, Info } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Tabs, Button } from '../../components/shared';
+
+const fadeUp = { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.3 } };
 
 const AcademicCalculators = () => {
-  const [activeSubTab, setActiveSubTab] = useState('cgpa'); // 'cgpa' or 'sgpa'
+  const [activeSubTab, setActiveSubTab] = useState('cgpa');
   const [multiplier, setMultiplier] = useState(9.5);
 
-  // --- CGPA to Percentage state ---
   const [cgpa, setCgpa] = useState('');
   const [percentage, setPercentage] = useState('');
 
-  // --- SGPA to CGPA Estimator state ---
   const [semesters, setSemesters] = useState([
     { id: 1, sgpa: '' },
     { id: 2, sgpa: '' }
@@ -18,7 +19,6 @@ const AcademicCalculators = () => {
   const [estCgpa, setEstCgpa] = useState(0);
   const [estPercentage, setEstPercentage] = useState(0);
 
-  // Fetch the active admin conversion formula multiplier on load
   useEffect(() => {
     const fetchConfig = async () => {
       try {
@@ -34,7 +34,6 @@ const AcademicCalculators = () => {
     fetchConfig();
   }, []);
 
-  // Real-time CGPA conversion
   useEffect(() => {
     const parsed = parseFloat(cgpa);
     if (!isNaN(parsed) && parsed >= 0 && parsed <= 10) {
@@ -44,7 +43,6 @@ const AcademicCalculators = () => {
     }
   }, [cgpa, multiplier]);
 
-  // Real-time SGPA estimation
   useEffect(() => {
     let sum = 0;
     let count = 0;
@@ -78,7 +76,6 @@ const AcademicCalculators = () => {
     setSemesters(prev => {
       const copy = [...prev];
       copy.splice(idx, 1);
-      // Re-index IDs
       return copy.map((item, index) => ({ ...item, id: index + 1 }));
     });
   };
@@ -91,148 +88,187 @@ const AcademicCalculators = () => {
     });
   };
 
+  const tabs = [
+    { id: 'cgpa', label: 'CGPA → %', icon: Calculator },
+    { id: 'sgpa', label: 'SGPA → CGPA', icon: Award },
+  ];
+
   return (
-    <div className="max-w-2xl mx-auto space-y-6 text-left">
-      
-      {/* Sub Tabs */}
-      <div className="flex border-b border-neutral-200 dark:border-white/5 pb-1">
-        <button
-          onClick={() => setActiveSubTab('cgpa')}
-          className={`px-4 py-2 font-bold text-sm border-b-2 transition-all ${
-            activeSubTab === 'cgpa'
-              ? 'border-indigo-500 text-indigo-500'
-              : 'border-transparent text-neutral-400 hover:text-neutral-200'
-          }`}
-        >
-          CGPA to Percentage Converter
-        </button>
-        <button
-          onClick={() => setActiveSubTab('sgpa')}
-          className={`px-4 py-2 font-bold text-sm border-b-2 transition-all ${
-            activeSubTab === 'sgpa'
-              ? 'border-indigo-500 text-indigo-500'
-              : 'border-transparent text-neutral-400 hover:text-neutral-200'
-          }`}
-        >
-          SGPA to CGPA Estimator
-        </button>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="text-center space-y-2">
+        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-violet-500/20 border border-indigo-500/30">
+          <Calculator className="w-7 h-7 text-indigo-400" />
+        </div>
+        <h1 className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-indigo-400 via-violet-400 to-purple-400 bg-clip-text text-transparent">
+          Academic Calculator
+        </h1>
+        <p className="text-sm text-[var(--text-secondary)] max-w-md mx-auto">
+          Convert CGPA to percentage or estimate CGPA from SGPA.
+        </p>
       </div>
 
-      {/* Info message */}
-      <div className="flex items-center space-x-2 p-3 rounded-xl bg-indigo-500/5 border border-indigo-500/10 text-neutral-500 text-xs">
-        <Info className="h-4 w-4 text-indigo-500 flex-shrink-0" />
-        <span>
-          Dynamic calculation loaded. Current formula multiplier is: **CGPA × {multiplier}**. Configured dynamic multiplier from admin dashboard.
-        </span>
+      <Tabs tabs={tabs} active={activeSubTab} onChange={setActiveSubTab} />
+
+      <div className="glass-panel rounded-xl p-3 border border-[var(--border)] flex items-center gap-2 text-[11px] text-[var(--text-secondary)]">
+        <Info className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0" />
+        <span className="min-w-0 break-words">Formula multiplier: <strong className="text-[var(--text-primary)]">CGPA × {multiplier}</strong> (configurable from admin dashboard)</span>
       </div>
 
-      {/* --- SUBTAB 1: CGPA TO PERCENTAGE --- */}
-      {activeSubTab === 'cgpa' && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="glass-panel p-6 rounded-2xl space-y-4"
-        >
-          <div className="flex items-center space-x-2">
-            <Calculator className="h-5 w-5 text-indigo-500" />
-            <h3 className="text-md font-bold text-neutral-800 dark:text-neutral-200">CGPA to Percentage</h3>
-          </div>
+      <AnimatePresence mode="wait">
+        {activeSubTab === 'cgpa' && (
+          <motion.div key="cgpa" {...fadeUp}
+            className="grid grid-cols-1 lg:grid-cols-5 gap-6">
 
-          <div className="space-y-4">
-            <div>
-              <label className="text-xs font-bold text-neutral-400 block mb-1">Enter CGPA (Scale of 10)</label>
-              <input
-                type="number"
-                min="0"
-                max="10"
-                step="0.01"
-                placeholder="e.g. 8.5"
-                value={cgpa}
-                onChange={(e) => setCgpa(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-transparent text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
-              />
+            {/* Left: Input Panel */}
+            <div className="lg:col-span-2 space-y-4">
+              <div className="glass-panel rounded-2xl p-5 space-y-5 border border-[var(--border)]">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-md flex items-center justify-center bg-indigo-500/20">
+                    <Calculator className="w-3.5 h-3.5 text-indigo-400" />
+                  </div>
+                  <p className="text-xs font-black uppercase tracking-wider text-indigo-400">CGPA Input</p>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">Enter CGPA (Scale of 10)</label>
+                  <input type="number" min="0" max="10" step="0.01" placeholder="e.g. 8.5" value={cgpa}
+                    onChange={(e) => setCgpa(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl text-sm font-medium outline-none
+                      bg-[var(--bg-secondary)] border border-[var(--border)] text-[var(--text-primary)]
+                      hover:border-[var(--accent)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 transition-all" />
+                </div>
+              </div>
             </div>
 
-            {percentage && (
-              <motion.div
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="p-5 rounded-xl bg-indigo-500/5 border border-indigo-500/15 text-center space-y-1"
-              >
-                <p className="text-xs text-neutral-400">Equivalent Percentage</p>
-                <p className="text-3xl font-black text-indigo-500">{percentage}%</p>
-                <p className="text-[10px] text-neutral-500 italic mt-1">
-                  Formula: {cgpa} × {multiplier} = {percentage}%
-                </p>
-              </motion.div>
-            )}
-          </div>
-        </motion.div>
-      )}
-
-      {/* --- SUBTAB 2: SGPA TO CGPA ESTIMATOR --- */}
-      {activeSubTab === 'sgpa' && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="glass-panel p-6 rounded-2xl space-y-6"
-        >
-          <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-2">
-              <Award className="h-5 w-5 text-indigo-500" />
-              <h3 className="text-md font-bold text-neutral-800 dark:text-neutral-200">SGPA to CGPA Estimator</h3>
-            </div>
-            <button
-              onClick={addSemester}
-              className="text-xs text-indigo-500 hover:text-indigo-400 font-bold flex items-center space-x-1 border border-indigo-500/10 px-3 py-1.5 rounded-lg bg-indigo-500/5"
-            >
-              <Plus className="h-3.5 w-3.5" /> <span>Add Semester</span>
-            </button>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 max-h-[300px] overflow-y-auto pr-2">
-            {semesters.map((sem, idx) => (
-              <div key={sem.id} className="flex items-center space-x-2 p-3 rounded-xl bg-neutral-50/50 dark:bg-white/5 border border-neutral-200 dark:border-white/5">
-                <span className="text-xs font-bold text-neutral-400 w-16">Sem {sem.id}</span>
-                <input
-                  type="number"
-                  min="0"
-                  max="10"
-                  step="0.01"
-                  placeholder="SGPA"
-                  value={sem.sgpa}
-                  onChange={(e) => handleSgpaChange(idx, e.target.value)}
-                  className="w-full px-3 py-1.5 rounded border border-neutral-300 dark:border-neutral-700 bg-transparent text-xs focus:outline-none"
-                />
-                {semesters.length > 1 && (
-                  <button onClick={() => removeSemester(idx)} className="text-red-400 hover:text-red-300">
-                    <Trash className="h-4 w-4" />
-                  </button>
+            {/* Right: Result Panel */}
+            <div className="lg:col-span-3 space-y-4">
+              <AnimatePresence mode="wait">
+                {!percentage ? (
+                  <motion.div key="empty" {...fadeUp}
+                    className="glass-panel rounded-2xl p-12 border border-[var(--border)] text-center">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-500/10 mb-4">
+                      <Calculator className="w-8 h-8 text-indigo-400/50" />
+                    </div>
+                    <p className="text-sm font-bold text-[var(--text-secondary)]">
+                      Enter your CGPA to see the equivalent percentage.
+                    </p>
+                  </motion.div>
+                ) : (
+                  <motion.div key="result" {...fadeUp} className="space-y-4">
+                    <div className="glass-panel rounded-2xl p-5 border border-indigo-500/30 bg-gradient-to-br from-indigo-500/5 to-violet-500/5">
+                      <h3 className="text-sm font-black uppercase tracking-wider text-indigo-400 mb-4 flex items-center gap-2">
+                        <Calculator className="w-4 h-4" /> Conversion Result
+                      </h3>
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center p-3 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)]">
+                          <span className="text-xs font-bold text-[var(--text-secondary)]">CGPA</span>
+                          <span className="text-lg font-black text-[var(--text-primary)]">{cgpa}</span>
+                        </div>
+                        <div className="flex justify-between items-center p-3 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)]">
+                          <span className="text-xs font-bold text-[var(--text-secondary)]">Multiplier</span>
+                          <span className="text-lg font-black text-violet-400">{multiplier}</span>
+                        </div>
+                        <div className="w-full h-px bg-indigo-500/30 my-1" />
+                        <div className="flex justify-between items-center p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/20">
+                          <span className="text-sm font-black text-indigo-400">Percentage</span>
+                          <span className="text-2xl font-black text-indigo-400">{percentage}%</span>
+                        </div>
+                        <p className="text-[10px] text-[var(--text-secondary)] italic text-center">
+                          Formula: {cgpa} × {multiplier} = {percentage}%
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
                 )}
-              </div>
-            ))}
-          </div>
+              </AnimatePresence>
+            </div>
+          </motion.div>
+        )}
 
-          {estCgpa > 0 && (
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="grid grid-cols-2 gap-4 bg-indigo-500/5 border border-indigo-500/15 p-5 rounded-xl text-center"
-            >
-              <div className="space-y-0.5">
-                <p className="text-xs text-neutral-400">Estimated CGPA</p>
-                <p className="text-2xl font-black text-indigo-500">{estCgpa}</p>
-              </div>
-              <div className="space-y-0.5 border-l border-neutral-200 dark:border-white/5">
-                <p className="text-xs text-neutral-400">Percentage Equivalent</p>
-                <p className="text-2xl font-black text-purple-500">{estPercentage}%</p>
-              </div>
-            </motion.div>
-          )}
+        {activeSubTab === 'sgpa' && (
+          <motion.div key="sgpa" {...fadeUp}
+            className="grid grid-cols-1 lg:grid-cols-5 gap-6">
 
-        </motion.div>
-      )}
+            {/* Left: Semester Inputs */}
+            <div className="lg:col-span-2 space-y-4">
+              <div className="glass-panel rounded-2xl p-5 space-y-5 border border-[var(--border)]">
+                <div className="flex flex-wrap justify-between items-center gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-md flex items-center justify-center bg-violet-500/20">
+                      <Award className="w-3.5 h-3.5 text-violet-400" />
+                    </div>
+                    <p className="text-xs font-black uppercase tracking-wider text-violet-400">Semester SGPA</p>
+                  </div>
+                  <Button variant="accent" size="sm" icon={Plus} onClick={addSemester}>Add</Button>
+                </div>
 
+                <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+                  {semesters.map((sem, idx) => (
+                    <div key={sem.id} className="flex items-center gap-2 p-3 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)]">
+                      <span className="text-[10px] font-bold text-[var(--text-secondary)] w-14">Sem {sem.id}</span>
+                      <input type="number" min="0" max="10" step="0.01" placeholder="SGPA" value={sem.sgpa}
+                        onChange={(e) => handleSgpaChange(idx, e.target.value)}
+                        className="w-full px-3 py-1.5 rounded-lg border border-[var(--border)] bg-transparent text-xs font-bold text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)] transition-all" />
+                      {semesters.length > 1 && (
+                        <button onClick={() => removeSemester(idx)}
+                          className="p-1.5 rounded-lg hover:bg-red-500/10 text-[var(--text-secondary)] hover:text-red-500 transition-all">
+                          <Trash className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Results */}
+            <div className="lg:col-span-3 space-y-4">
+              <AnimatePresence mode="wait">
+                {estCgpa > 0 ? (
+                  <motion.div key="results" {...fadeUp} className="space-y-4">
+                    <div className="glass-panel rounded-2xl p-5 border border-violet-500/30 bg-gradient-to-br from-violet-500/5 to-purple-500/5">
+                      <h3 className="text-sm font-black uppercase tracking-wider text-violet-400 mb-4 flex items-center gap-2">
+                        <Award className="w-4 h-4" /> Estimated Results
+                      </h3>
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="flex justify-between items-center p-3 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)]">
+                            <span className="text-xs font-bold text-[var(--text-secondary)]">Semesters</span>
+                            <span className="text-lg font-black text-[var(--text-primary)]">{semesters.length}</span>
+                          </div>
+                          <div className="flex justify-between items-center p-3 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)]">
+                            <span className="text-xs font-bold text-[var(--text-secondary)]">Multiplier</span>
+                            <span className="text-lg font-black text-violet-400">{multiplier}</span>
+                          </div>
+                        </div>
+                        <div className="w-full h-px bg-violet-500/30 my-1" />
+                        <div className="flex justify-between items-center p-3 rounded-xl bg-violet-500/10 border border-violet-500/20">
+                          <span className="text-sm font-black text-violet-400">Estimated CGPA</span>
+                          <span className="text-2xl font-black text-violet-400">{estCgpa}</span>
+                        </div>
+                        <div className="flex justify-between items-center p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/20">
+                          <span className="text-sm font-black text-indigo-400">Equivalent Percentage</span>
+                          <span className="text-2xl font-black text-indigo-400">{estPercentage}%</span>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ) : (
+                  <motion.div key="empty" {...fadeUp}
+                    className="glass-panel rounded-2xl p-12 border border-[var(--border)] text-center">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-violet-500/10 mb-4">
+                      <Award className="w-8 h-8 text-violet-400/50" />
+                    </div>
+                    <p className="text-sm font-bold text-[var(--text-secondary)]">
+                      Add semester SGPAs to see your estimated CGPA and percentage.
+                    </p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

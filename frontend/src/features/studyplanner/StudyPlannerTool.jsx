@@ -16,6 +16,7 @@ import AISmartPlan from './AISmartPlan';
 import AIProductivityInsights from './AIProductivityInsights';
 import Notifications from './Notifications';
 import ExportPanel from './ExportPanel';
+import { Tabs, Button, SectionHeader } from '../../components/shared';
 
 const POMO = [
   { id: 'focus', label: 'Focus', mins: 25, color: 'from-indigo-500 to-purple-600' },
@@ -50,7 +51,7 @@ const StudyPlannerTool = () => {
 
   const handleStartTimer = () => startTimer(timerSelect, timerSubjectSelect);
 
-  const sections = [
+  const sectionTabs = [
     { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
     { id: 'planner', label: 'Planner', icon: CalendarDays },
     { id: 'assignments', label: 'Tasks', icon: ListTodo },
@@ -77,17 +78,15 @@ const StudyPlannerTool = () => {
             </div>
           )}
           <div className="relative">
-            <button onClick={() => setShowNotifPanel(!showNotifPanel)}
-              className="relative p-2 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all">
+            <Button variant="secondary" size="sm" onClick={() => setShowNotifPanel(!showNotifPanel)} className="relative">
               <Bell className="w-4 h-4" />
               {unreadCount > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[8px] font-bold flex items-center justify-center">{unreadCount}</span>}
-            </button>
+            </Button>
           </div>
           <ExportPanel stats={stats} assignments={assignments} exams={exams} goals={goals} subjects={subjects} />
         </div>
       </div>
 
-      {/* Notification Panel */}
       <AnimatePresence>
         {showNotifPanel && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
@@ -96,30 +95,14 @@ const StudyPlannerTool = () => {
         )}
       </AnimatePresence>
 
-      {/* Summary Cards */}
       <TopSummaryCards stats={stats} />
 
-      {/* Section Navigation */}
-      <div className="flex border-b border-[var(--border)] pb-1 overflow-x-auto scrollbar-hide">
-        {sections.map(s => {
-          const Icon = s.icon;
-          return (
-            <button key={s.id} onClick={() => setActiveSection(s.id)}
-              className={`flex items-center gap-1.5 px-4 py-2 font-bold text-xs border-b-2 whitespace-nowrap transition-all ${
-                activeSection === s.id ? 'border-indigo-500 text-indigo-500' : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-              }`}>
-              <Icon className="w-3.5 h-3.5" /> {s.label}
-            </button>
-          );
-        })}
-      </div>
+      <Tabs tabs={sectionTabs} active={activeSection} onChange={setActiveSection} />
 
       <AnimatePresence mode="wait">
-        {/* ============ DASHBOARD ============ */}
         {activeSection === 'dashboard' && (
           <motion.div key="dash" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
             className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            {/* Timer */}
             <div className="glass-panel border border-[var(--border)] rounded-2xl p-6 space-y-4">
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-indigo-500" />
@@ -127,10 +110,10 @@ const StudyPlannerTool = () => {
               </div>
               <div className="flex gap-1.5">
                 {POMO.map(p => (
-                  <button key={p.id} onClick={() => { if (!timerRunning) { setTimerSelect(p.id); resetTimer(p.id); } }}
-                    className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold border transition-all ${timerSelect === p.id ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-500' : 'bg-[var(--bg-secondary)] border-[var(--border)] text-[var(--text-secondary)]'}`}>
+                  <Button key={p.id} variant={timerSelect === p.id ? 'accent' : 'secondary'} size="sm" fullWidth
+                    onClick={() => { if (!timerRunning) { setTimerSelect(p.id); resetTimer(p.id); } }}>
                     {p.label}
-                  </button>
+                  </Button>
                 ))}
               </div>
               <select value={timerSubjectSelect} onChange={e => setTimerSubjectSelect(e.target.value)} disabled={timerRunning}
@@ -143,25 +126,19 @@ const StudyPlannerTool = () => {
               </div>
               <div className="flex gap-2 justify-center">
                 {!timerRunning ? (
-                  <button onClick={handleStartTimer}
-                    className="flex items-center gap-1.5 px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold text-xs shadow-lg shadow-indigo-500/20">
-                    <Play className="w-3.5 h-3.5" /> Start
-                  </button>
+                  <Button variant="primary" icon={Play} onClick={handleStartTimer} className="!bg-gradient-to-r !from-indigo-500 !to-purple-600 hover:!shadow-lg hover:!shadow-indigo-500/20">
+                    Start
+                  </Button>
                 ) : (
-                  <button onClick={pauseTimer}
-                    className="flex items-center gap-1.5 px-6 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 font-bold text-xs">
-                    <Pause className="w-3.5 h-3.5" /> Pause
-                  </button>
+                  <Button variant="secondary" icon={Pause} onClick={pauseTimer} className="!text-amber-500 !border-amber-500/20 hover:!bg-amber-500/10">
+                    Pause
+                  </Button>
                 )}
-                <button onClick={() => resetTimer()}
-                  className="p-2.5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)] text-[var(--text-secondary)]">
-                  <RotateCcw className="w-3.5 h-3.5" />
-                </button>
+                <Button variant="secondary" size="sm" onClick={() => resetTimer()}><RotateCcw className="w-3.5 h-3.5" /></Button>
               </div>
-              {/* Recent Sessions */}
               {sessions.length > 0 && (
                 <div className="space-y-2 pt-2 border-t border-[var(--border)]">
-                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-secondary)]">Recent Sessions</h4>
+                  <SectionHeader icon={Clock} label="Recent Sessions" />
                   {sessions.slice(-5).reverse().map(s => (
                     <div key={s.id} className="flex items-center gap-2 py-1">
                       <div className="w-2 h-2 rounded-full" style={{ background: getSubjectColor(s.subjectId) }} />
@@ -173,12 +150,10 @@ const StudyPlannerTool = () => {
               )}
             </div>
 
-            {/* Exam Countdown */}
             <ExamCountdown exams={exams} addExam={addExam} deleteExam={deleteExam} subjects={subjects} getSubjectName={getSubjectName} getSubjectColor={getSubjectColor} />
           </motion.div>
         )}
 
-        {/* ============ PLANNER ============ */}
         {activeSection === 'planner' && (
           <motion.div key="plan" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
             className="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -187,7 +162,6 @@ const StudyPlannerTool = () => {
           </motion.div>
         )}
 
-        {/* ============ ASSIGNMENTS ============ */}
         {activeSection === 'assignments' && (
           <motion.div key="assign" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
             className="max-w-3xl">
@@ -196,7 +170,6 @@ const StudyPlannerTool = () => {
           </motion.div>
         )}
 
-        {/* ============ GOALS ============ */}
         {activeSection === 'goals' && (
           <motion.div key="goals" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
             className="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -205,7 +178,6 @@ const StudyPlannerTool = () => {
           </motion.div>
         )}
 
-        {/* ============ AI ============ */}
         {activeSection === 'ai' && (
           <motion.div key="ai" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
             className="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -214,7 +186,6 @@ const StudyPlannerTool = () => {
           </motion.div>
         )}
 
-        {/* ============ INSIGHTS ============ */}
         {activeSection === 'insights' && (
           <motion.div key="insights" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
             className="grid grid-cols-1 lg:grid-cols-2 gap-5">

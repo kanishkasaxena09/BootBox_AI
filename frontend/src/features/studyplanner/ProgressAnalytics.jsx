@@ -1,7 +1,8 @@
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { BarChart3, TrendingUp, Clock, BookOpen } from 'lucide-react';
+import { BarChart3, TrendingUp, BookOpen } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
+import { SectionHeader, EmptyState } from '../../components/shared';
 
 const fadeUp = { initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0 } };
 
@@ -38,9 +39,8 @@ const ProgressAnalytics = ({ stats }) => {
         <h3 className="text-sm font-bold text-[var(--text-primary)]">Progress Analytics</h3>
       </div>
 
-      {/* Weekly Study Hours */}
       <div className="space-y-2">
-        <h4 className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-secondary)]">Weekly Study Hours</h4>
+        <SectionHeader icon={BarChart3} label="Weekly Study Hours" />
         <div className="h-[160px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={weekData}>
@@ -53,9 +53,8 @@ const ProgressAnalytics = ({ stats }) => {
         </div>
       </div>
 
-      {/* Monthly Progress */}
       <div className="space-y-2">
-        <h4 className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-secondary)]">Monthly Progress</h4>
+        <SectionHeader icon={TrendingUp} label="Monthly Progress" />
         <div className="h-[140px]">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={monthData}>
@@ -69,9 +68,8 @@ const ProgressAnalytics = ({ stats }) => {
         </div>
       </div>
 
-      {/* Subject Performance */}
       <div className="space-y-2">
-        <h4 className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-secondary)]">Subject Performance</h4>
+        <SectionHeader icon={BookOpen} label="Subject Performance" />
         {subjectBarData.length > 0 ? (
           <div className="h-[140px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -84,10 +82,13 @@ const ProgressAnalytics = ({ stats }) => {
               </BarChart>
             </ResponsiveContainer>
           </div>
-        ) : <p className="text-[10px] text-[var(--text-secondary)] text-center py-4">No data yet</p>}
+        ) : (
+          <div className="py-6">
+            <EmptyState icon={BarChart3} title="No subject data yet" description="Start tracking study sessions to see analytics." />
+          </div>
+        )}
       </div>
 
-      {/* CGPA Prediction */}
       <div className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-indigo-500/5 to-purple-500/5 border border-indigo-500/10">
         <div className="p-3 rounded-xl bg-indigo-500/10">
           <TrendingUp className="w-5 h-5 text-indigo-500" />

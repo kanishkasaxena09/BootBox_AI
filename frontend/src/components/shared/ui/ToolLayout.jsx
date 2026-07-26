@@ -17,7 +17,7 @@ export default function ToolLayout({ icon: Icon, title, subtitle, accentColor = 
           <Icon className="w-7 h-7" style={{ color: accentColor }} />
         </motion.div>
         <motion.h1 {...fadeUp}
-          className="text-3xl font-black bg-gradient-to-r bg-clip-text text-transparent"
+          className="text-2xl sm:text-3xl font-black bg-gradient-to-r bg-clip-text text-transparent"
           style={{ backgroundImage: `linear-gradient(to right, ${accentColor}, ${accentColor}cc)` }}>
           {title}
         </motion.h1>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Download, FileText, FileSpreadsheet, Printer, Share2, RotateCcw } from 'lucide-react';
+import { FileText, FileSpreadsheet, Printer, Share2 } from 'lucide-react';
+import { Button } from '../../components/shared';
 
 const ExportPanel = ({ stats, assignments, exams, goals, subjects }) => {
   const [exporting, setExporting] = useState(null);
@@ -70,22 +71,12 @@ const ExportPanel = ({ stats, assignments, exams, goals, subjects }) => {
     setExporting(null);
   };
 
-  const btnCls = "flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-indigo-500 font-bold text-[10px] transition-all disabled:opacity-50";
-
   return (
     <div className="flex items-center gap-2 flex-wrap">
-      <button onClick={exportPDF} disabled={!!exporting} className={btnCls}>
-        {exporting === 'pdf' ? <RotateCcw className="w-3 h-3 animate-spin" /> : <FileText className="w-3 h-3" />} PDF
-      </button>
-      <button onClick={exportCSV} disabled={!!exporting} className={btnCls}>
-        {exporting === 'csv' ? <RotateCcw className="w-3 h-3 animate-spin" /> : <FileSpreadsheet className="w-3 h-3" />} Excel
-      </button>
-      <button onClick={printView} disabled={!!exporting} className={btnCls}>
-        <Printer className="w-3 h-3" /> Print
-      </button>
-      <button onClick={shareData} disabled={!!exporting} className={btnCls}>
-        <Share2 className="w-3 h-3" /> Share
-      </button>
+      <Button variant="secondary" size="sm" icon={FileText} loading={exporting === 'pdf'} onClick={exportPDF}>PDF</Button>
+      <Button variant="secondary" size="sm" icon={FileSpreadsheet} loading={exporting === 'csv'} onClick={exportCSV}>Excel</Button>
+      <Button variant="secondary" size="sm" icon={Printer} onClick={printView}>Print</Button>
+      <Button variant="secondary" size="sm" icon={Share2} onClick={shareData}>Share</Button>
     </div>
   );
 };

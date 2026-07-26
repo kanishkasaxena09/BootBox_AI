@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Target, Plus, Trash2, Check, X, Flame, Repeat, Calendar } from 'lucide-react';
+import { Target, Plus, Trash2, Check, Flame, Repeat } from 'lucide-react';
 import { PRIORITY } from './useStudyPlanner';
+import { Button, EmptyState, SectionHeader, TextInput, SelectInput, DateInput } from '../../components/shared';
 
 const fadeUp = { initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -10 } };
-const inputCls = "w-full px-3 py-2.5 rounded-xl text-xs font-medium bg-[var(--bg-secondary)] border border-[var(--border)] text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)]/30 transition-all";
 const TYPES = ['daily', 'weekly', 'monthly', 'yearly'];
 
 const GoalSetting = ({ goals, addGoal, updateGoal, deleteGoal, toggleGoal }) => {
@@ -25,17 +25,10 @@ const GoalSetting = ({ goals, addGoal, updateGoal, deleteGoal, toggleGoal }) => 
 
   return (
     <motion.div {...fadeUp} className="glass-panel border border-[var(--border)] rounded-2xl p-6 space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="p-2 bg-green-500/10 rounded-xl"><Target className="w-4 h-4 text-green-500" /></div>
-          <h3 className="text-sm font-bold text-[var(--text-primary)]">Goal Setting</h3>
-        </div>
-        <button onClick={() => setShowForm(!showForm)} className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 text-[10px] font-bold">
-          <Plus className="w-3 h-3" /> Add
-        </button>
-      </div>
+      <SectionHeader icon={Target} label="Goal Setting">
+        <Button variant="accent" size="sm" icon={Plus} onClick={() => setShowForm(!showForm)}>Add</Button>
+      </SectionHeader>
 
-      {/* Stats */}
       <div className="flex gap-3">
         <div className="flex-1 p-2.5 rounded-xl bg-[var(--bg-secondary)] text-center">
           <p className="text-lg font-black text-[var(--text-primary)]">{completedCount}/{goals.length}</p>
@@ -47,30 +40,23 @@ const GoalSetting = ({ goals, addGoal, updateGoal, deleteGoal, toggleGoal }) => 
         </div>
       </div>
 
-      {/* Filter */}
       <div className="flex gap-1.5">
         {['all', ...TYPES].map(t => (
-          <button key={t} onClick={() => setFilter(t)}
-            className={`px-2.5 py-1 rounded-lg text-[10px] font-bold capitalize transition-all ${filter === t ? 'bg-indigo-500/10 border border-indigo-500/30 text-indigo-500' : 'bg-[var(--bg-secondary)] border border-[var(--border)] text-[var(--text-secondary)]'}`}>
+          <Button key={t} variant={filter === t ? 'accent' : 'secondary'} size="sm" onClick={() => setFilter(t)} className="capitalize">
             {t}
-          </button>
+          </Button>
         ))}
       </div>
 
-      {/* Form */}
       <AnimatePresence>
         {showForm && (
           <motion.form initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
             onSubmit={handleSave} className="overflow-hidden space-y-3">
-            <input required value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} className={inputCls} placeholder="Goal title..." />
+            <TextInput label="Goal Title" value={form.title} onChange={v => setForm(f => ({ ...f, title: v }))} placeholder="Goal title..." />
             <div className="grid grid-cols-3 gap-2">
-              <select value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))} className={inputCls + ' appearance-none'}>
-                {TYPES.map(t => <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>)}
-              </select>
-              <select value={form.priority} onChange={e => setForm(f => ({ ...f, priority: e.target.value }))} className={inputCls + ' appearance-none'}>
-                {Object.entries(PRIORITY).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
-              </select>
-              <input type="date" value={form.deadline} onChange={e => setForm(f => ({ ...f, deadline: e.target.value }))} className={inputCls} />
+              <SelectInput label="Type" value={form.type} onChange={v => setForm(f => ({ ...f, type: v }))} options={TYPES.map(t => ({ value: t, label: t.charAt(0).toUpperCase() + t.slice(1) }))} />
+              <SelectInput label="Priority" value={form.priority} onChange={v => setForm(f => ({ ...f, priority: v }))} options={Object.entries(PRIORITY).map(([k, v]) => ({ value: k, label: v.label }))} />
+              <DateInput label="Deadline" value={form.deadline} onChange={v => setForm(f => ({ ...f, deadline: v }))} />
             </div>
             <div className="flex items-center gap-2">
               <label className="flex items-center gap-1.5 text-[10px] font-bold text-[var(--text-secondary)] cursor-pointer">
@@ -78,19 +64,15 @@ const GoalSetting = ({ goals, addGoal, updateGoal, deleteGoal, toggleGoal }) => 
                 <Repeat className="w-3 h-3" /> Recurring
               </label>
             </div>
-            <button type="submit" className="w-full py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold text-xs">Add Goal</button>
+            <Button type="submit" variant="primary" fullWidth className="!bg-gradient-to-r !from-indigo-500 !to-purple-600">Add Goal</Button>
           </motion.form>
         )}
       </AnimatePresence>
 
-      {/* Goal List */}
       <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
         <AnimatePresence>
           {filtered.length === 0 ? (
-            <div className="text-center py-6 space-y-2">
-              <Target className="w-8 h-8 mx-auto text-[var(--text-secondary)] opacity-30" />
-              <p className="text-xs font-bold text-[var(--text-secondary)]">No goals yet</p>
-            </div>
+            <EmptyState icon={Target} title="No goals yet" description="Set your first goal to start tracking progress." />
           ) : filtered.map(g => (
             <motion.div key={g.id} layout variants={fadeUp} initial="initial" animate="animate" exit="exit"
               className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${g.completed ? 'bg-green-500/5 border-green-500/10 opacity-70' : 'bg-[var(--bg-secondary)]/50 border-[var(--border)]'}`}>
@@ -107,7 +89,9 @@ const GoalSetting = ({ goals, addGoal, updateGoal, deleteGoal, toggleGoal }) => 
                   {g.recurring && <Repeat className="w-2.5 h-2.5 text-[var(--text-secondary)]" />}
                 </div>
               </div>
-              <button onClick={() => deleteGoal(g.id)} className="p-1 rounded hover:bg-red-500/10 text-[var(--text-secondary)] hover:text-red-500 flex-shrink-0"><Trash2 className="w-3 h-3" /></button>
+              <Button variant="ghost" size="sm" onClick={() => deleteGoal(g.id)} className="!text-[var(--text-secondary)] hover:!text-red-500 hover:!bg-red-500/10">
+                <Trash2 className="w-3 h-3" />
+              </Button>
             </motion.div>
           ))}
         </AnimatePresence>

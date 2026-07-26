@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ClipboardList, Clock, TrendingUp, Target } from 'lucide-react';
+import { StatCard } from '../../components/shared';
 
 const CARD_CONFIG = [
   { key: 'assignments', icon: ClipboardList, color: '#6366f1', label: 'Total Assignments' },

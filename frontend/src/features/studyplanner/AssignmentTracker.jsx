@@ -1,11 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ClipboardList, Plus, Search, Trash2, Edit2, Calendar, AlertTriangle, Check, X, ChevronDown, Filter, ArrowUpDown } from 'lucide-react';
+import { ClipboardList, Plus, Search, Trash2, Edit2, AlertTriangle, Check } from 'lucide-react';
 import { PRIORITY, STATUS } from './useStudyPlanner';
+import { Button, EmptyState, Modal, SectionHeader, TextInput, SelectInput, DateInput, TextArea } from '../../components/shared';
 
 const fadeUp = { initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -10 } };
-const inputCls = "w-full px-3 py-2.5 rounded-xl text-xs font-medium bg-[var(--bg-secondary)] border border-[var(--border)] text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)]/30 transition-all";
-const selectCls = inputCls + " appearance-none";
 
 const AssignmentTracker = ({ assignments, addAssignment, updateAssignment, deleteAssignment, subjects, getSubjectName, getSubjectColor }) => {
   const [showForm, setShowForm] = useState(false);
@@ -46,17 +45,10 @@ const AssignmentTracker = ({ assignments, addAssignment, updateAssignment, delet
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="glass-panel border border-[var(--border)] rounded-2xl p-6 space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="p-2 bg-purple-500/10 rounded-xl"><ClipboardList className="w-4 h-4 text-purple-500" /></div>
-          <h3 className="text-sm font-bold text-[var(--text-primary)]">Assignment Tracker</h3>
-        </div>
-        <button onClick={openNew} className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 text-[10px] font-bold">
-          <Plus className="w-3 h-3" /> Add
-        </button>
-      </div>
+      <SectionHeader icon={ClipboardList} label="Assignment Tracker">
+        <Button variant="accent" size="sm" icon={Plus} onClick={openNew}>Add</Button>
+      </SectionHeader>
 
-      {/* Progress Bar */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
           <span className="text-[10px] font-bold text-[var(--text-secondary)]">{completedCount}/{assignments.length} completed</span>
@@ -72,31 +64,22 @@ const AssignmentTracker = ({ assignments, addAssignment, updateAssignment, delet
         )}
       </div>
 
-      {/* Filters */}
       <div className="flex items-center gap-2 flex-wrap">
         <div className="relative flex-1 min-w-[120px]">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-[var(--text-secondary)]" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search..."
             className="w-full pl-8 pr-3 py-2 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)] text-[10px] font-bold text-[var(--text-primary)] focus:outline-none" />
         </div>
-        <select value={sortBy} onChange={e => setSortBy(e.target.value)}
-          className="px-2.5 py-2 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)] text-[10px] font-bold text-[var(--text-secondary)] appearance-none focus:outline-none">
-          <option value="deadline">Deadline</option>
-          <option value="priority">Priority</option>
-          <option value="status">Status</option>
-          <option value="name">Name</option>
-        </select>
+        <SelectInput value={sortBy} onChange={setSortBy} options={[
+          { value: 'deadline', label: 'Deadline' }, { value: 'priority', label: 'Priority' }, { value: 'status', label: 'Status' }, { value: 'name', label: 'Name' }
+        ]} />
       </div>
 
-      {/* List */}
       <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
         <AnimatePresence>
           {sorted.length === 0 ? (
-            <div className="text-center py-8 space-y-2">
-              <ClipboardList className="w-8 h-8 mx-auto text-[var(--text-secondary)] opacity-30" />
-              <p className="text-xs font-bold text-[var(--text-secondary)]">No assignments yet</p>
-              <button onClick={openNew} className="text-[10px] font-bold text-indigo-500">+ Add Assignment</button>
-            </div>
+            <EmptyState icon={ClipboardList} title="No assignments yet" description="Add your first assignment to start tracking."
+              action={<Button variant="accent" size="sm" icon={Plus} onClick={openNew}>Add Assignment</Button>} />
           ) : sorted.map(a => {
             const isOverdue = a.status !== 'completed' && a.deadline && a.deadline < today;
             return (
@@ -121,8 +104,8 @@ const AssignmentTracker = ({ assignments, addAssignment, updateAssignment, delet
                   {a.notes && <p className="text-[10px] text-[var(--text-secondary)] mt-1 truncate">{a.notes}</p>}
                 </div>
                 <div className="flex gap-1 flex-shrink-0">
-                  <button onClick={() => openEdit(a)} className="p-1 rounded hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)]"><Edit2 className="w-3 h-3" /></button>
-                  <button onClick={() => deleteAssignment(a.id)} className="p-1 rounded hover:bg-red-500/10 text-[var(--text-secondary)] hover:text-red-500"><Trash2 className="w-3 h-3" /></button>
+                  <Button variant="ghost" size="sm" onClick={() => openEdit(a)}><Edit2 className="w-3 h-3" /></Button>
+                  <Button variant="ghost" size="sm" onClick={() => deleteAssignment(a.id)} className="hover:!text-red-500 hover:!bg-red-500/10"><Trash2 className="w-3 h-3" /></Button>
                 </div>
               </motion.div>
             );
@@ -130,62 +113,24 @@ const AssignmentTracker = ({ assignments, addAssignment, updateAssignment, delet
         </AnimatePresence>
       </div>
 
-      {/* Form Modal */}
-      <AnimatePresence>
-        {showForm && (
-          <div className="fixed inset-0 z-[9998] flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowForm(false)} />
-            <motion.div initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="relative w-full max-w-md glass-panel rounded-2xl border border-[var(--border)] shadow-2xl p-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold text-[var(--text-primary)]">{editId ? 'Edit' : 'New'} Assignment</h3>
-                <button onClick={() => setShowForm(false)}><X className="w-4 h-4 text-[var(--text-secondary)]" /></button>
-              </div>
-              <form onSubmit={handleSave} className="space-y-3">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-secondary)]">Assignment Name</label>
-                  <input required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className={inputCls} placeholder="e.g. Data Structures Lab" />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-secondary)]">Subject</label>
-                    <select value={form.subject} onChange={e => setForm(f => ({ ...f, subject: e.target.value }))} className={selectCls}>
-                      <option value="">None</option>
-                      {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                    </select>
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-secondary)]">Priority</label>
-                    <select value={form.priority} onChange={e => setForm(f => ({ ...f, priority: e.target.value }))} className={selectCls}>
-                      {Object.entries(PRIORITY).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
-                    </select>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-secondary)]">Deadline</label>
-                    <input type="date" value={form.deadline} onChange={e => setForm(f => ({ ...f, deadline: e.target.value }))} className={inputCls} />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-secondary)]">Status</label>
-                    <select value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))} className={selectCls}>
-                      {Object.entries(STATUS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-                    </select>
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-secondary)]">Notes</label>
-                  <textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} rows={2} className={inputCls + ' resize-none'} placeholder="Optional notes..." />
-                </div>
-                <div className="flex gap-2 pt-1">
-                  <button type="submit" className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold text-xs">{editId ? 'Save' : 'Add Assignment'}</button>
-                  <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2.5 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)] text-[var(--text-secondary)] font-bold text-xs">Cancel</button>
-                </div>
-              </form>
-            </motion.div>
+      <Modal isOpen={showForm} onClose={() => setShowForm(false)} title={`${editId ? 'Edit' : 'New'} Assignment`} size="md">
+        <form onSubmit={handleSave} className="space-y-3">
+          <TextInput label="Assignment Name" value={form.name} onChange={v => setForm(f => ({ ...f, name: v }))} placeholder="e.g. Data Structures Lab" />
+          <div className="grid grid-cols-2 gap-3">
+            <SelectInput label="Subject" value={form.subject} onChange={v => setForm(f => ({ ...f, subject: v }))} options={[{ value: '', label: 'None' }, ...subjects.map(s => ({ value: s.id, label: s.name }))]} />
+            <SelectInput label="Priority" value={form.priority} onChange={v => setForm(f => ({ ...f, priority: v }))} options={Object.entries(PRIORITY).map(([k, v]) => ({ value: k, label: v.label }))} />
           </div>
-        )}
-      </AnimatePresence>
+          <div className="grid grid-cols-2 gap-3">
+            <DateInput label="Deadline" value={form.deadline} onChange={v => setForm(f => ({ ...f, deadline: v }))} />
+            <SelectInput label="Status" value={form.status} onChange={v => setForm(f => ({ ...f, status: v }))} options={Object.entries(STATUS).map(([k, v]) => ({ value: k, label: v }))} />
+          </div>
+          <TextArea label="Notes" value={form.notes} onChange={v => setForm(f => ({ ...f, notes: v }))} rows={2} placeholder="Optional notes..." />
+          <div className="flex gap-2 pt-1">
+            <Button type="submit" variant="primary" fullWidth className="!bg-gradient-to-r !from-indigo-500 !to-purple-600">{editId ? 'Save' : 'Add Assignment'}</Button>
+            <Button type="button" variant="secondary" onClick={() => setShowForm(false)}>Cancel</Button>
+          </div>
+        </form>
+      </Modal>
     </motion.div>
   );
 };

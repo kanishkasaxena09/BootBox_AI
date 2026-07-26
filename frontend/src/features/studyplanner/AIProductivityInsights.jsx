@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Brain, Clock, Sun, Calendar, BookOpen, Zap, AlertTriangle, Target, Gauge, TrendingUp } from 'lucide-react';
+import { Brain, Clock, Sun, Calendar, BookOpen, AlertTriangle, Target, TrendingUp } from 'lucide-react';
+import { SectionHeader } from '../../components/shared';
 
 const fadeUp = { initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0 } };
 
@@ -50,7 +51,7 @@ const AIProductivityInsights = ({ getInsights }) => {
       </div>
 
       <div className="space-y-3 pt-2">
-        <h4 className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-secondary)]">Performance Scores</h4>
+        <SectionHeader icon={TrendingUp} label="Performance Scores" />
         <ScoreBar label="Focus Score" score={insights.focusScore} color="#6366f1" />
         <ScoreBar label="Consistency Score" score={insights.consistencyScore} color="#10b981" />
         <ScoreBar label="Learning Speed" score={insights.learningSpeed === 'Fast' ? 85 : insights.learningSpeed === 'Moderate' ? 60 : 35} color="#8b5cf6" />
