@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Activity, BarChart, Settings, MessageSquare, Trash, Save, LogOut, CheckCircle, X } from 'lucide-react';
+import { Users, Activity, BarChart, Settings, MessageSquare, Trash, Save, LogOut, CheckCircle, X, Database, Plus, ChevronRight, ArrowLeft, ExternalLink, Upload, FileText, Link } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Toast = ({ message, type, onClose }) => (
@@ -31,6 +31,28 @@ const AdminDashboard = ({ onLogout }) => {
   const [websiteTagline, setWebsiteTagline] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [saving, setSaving] = useState(false);
+
+  const [solData, setSolData] = useState({ years: [] });
+  const [solLoading, setSolLoading] = useState(false);
+  const [editingYearId, setEditingYearId] = useState(null);
+  const [editingSemId, setEditingSemId] = useState(null);
+  const [showAddYear, setShowAddYear] = useState(false);
+  const [showAddSem, setShowAddSem] = useState(false);
+  const [newYearLabel, setNewYearLabel] = useState('');
+  const [newYearDesc, setNewYearDesc] = useState('');
+  const [newSemLabel, setNewSemLabel] = useState('');
+  const [newSemDesc, setNewSemDesc] = useState('');
+  const [newSubjectName, setNewSubjectName] = useState('');
+  const [newSubjectDesc, setNewSubjectDesc] = useState('');
+  const [newSubjectLink, setNewSubjectLink] = useState('');
+
+  const [expandedSubj, setExpandedSubj] = useState(null);
+  const [showAddDoc, setShowAddDoc] = useState(false);
+  const [docType, setDocType] = useState('file');
+  const [newDocName, setNewDocName] = useState('');
+  const [newDocUrl, setNewDocUrl] = useState('');
+  const [newDocFile, setNewDocFile] = useState(null);
+  const [docUploading, setDocUploading] = useState(false);
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
@@ -69,6 +91,7 @@ const AdminDashboard = ({ onLogout }) => {
   };
 
   useEffect(() => { fetchAnalytics(); }, []);
+  useEffect(() => { if (activeTab === 'sol') fetchSolDatabase(); }, [activeTab]);
 
   const handleSaveSettings = async (e) => {
     e.preventDefault();
@@ -91,6 +114,36 @@ const AdminDashboard = ({ onLogout }) => {
       showToast('Failed to save settings: ' + err.message, 'error');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const fetchSolDatabase = async () => {
+    setSolLoading(true);
+    const token = localStorage.getItem('adminToken');
+    try {
+      const response = await fetch('/api/soldatabase', { headers: { 'x-admin-token': token } });
+      const data = await response.json();
+      if (response.ok) setSolData(data);
+    } catch (err) {
+      showToast('Failed to load SOL Database: ' + err.message, 'error');
+    } finally {
+      setSolLoading(false);
+    }
+  };
+
+  const saveSolDatabase = async (newData) => {
+    const token = localStorage.getItem('adminToken');
+    try {
+      const response = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
+        body: JSON.stringify({ key: 'sol_database', value: newData })
+      });
+      if (!response.ok) throw new Error('Failed to save.');
+      setSolData(newData);
+      showToast('SOL Database saved!');
+    } catch (err) {
+      showToast('Failed to save: ' + err.message, 'error');
     }
   };
 
@@ -159,6 +212,7 @@ const AdminDashboard = ({ onLogout }) => {
           { id: 'analytics', label: 'Analytics', icon: BarChart },
           { id: 'feedbacks', label: 'Feedback', icon: MessageSquare },
           { id: 'settings', label: 'Settings', icon: Settings },
+          { id: 'sol', label: 'SOL Database', icon: Database },
         ].map(({ id, label, icon: Icon }) => (
           <button key={id} onClick={() => setActiveTab(id)}
             className={`px-4 py-2 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition-all ${
@@ -287,6 +341,260 @@ const AdminDashboard = ({ onLogout }) => {
             <span>{saving ? 'Saving...' : 'Save Settings'}</span>
           </button>
         </form>
+      )}
+
+      {/* SOL DATABASE */}
+      {activeTab === 'sol' && (
+        <div className="glass-panel p-5 rounded-2xl border border-[var(--border-color)]">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-2 text-sm font-bold">
+              {editingYearId ? (
+                <>
+                  <button onClick={() => { setEditingYearId(null); setEditingSemId(null); }} className="text-pink-600 hover:underline">Years</button>
+                  <ChevronRight className="h-3.5 w-3.5 text-[var(--text-secondary)]" />
+                  {editingSemId ? (
+                    <>
+                      <button onClick={() => setEditingSemId(null)} className="text-pink-600 hover:underline">
+                        {solData.years.find(y => y.id === editingYearId)?.label}
+                      </button>
+                      <ChevronRight className="h-3.5 w-3.5 text-[var(--text-secondary)]" />
+                      <span className="text-[var(--text-primary)]">{solData.years.find(y => y.id === editingYearId)?.semesters.find(s => s.id === editingSemId)?.label}</span>
+                    </>
+                  ) : (
+                    <span className="text-[var(--text-primary)]">{solData.years.find(y => y.id === editingYearId)?.label}</span>
+                  )}
+                </>
+              ) : (
+                <Database className="h-4 w-4 text-pink-600" />
+              )}
+              <span className="text-[var(--text-primary)]">{!editingYearId ? 'SOL Database' : ''}</span>
+            </div>
+            <button onClick={fetchSolDatabase} className="px-3 py-1.5 bg-[var(--bg-secondary)] hover:bg-pink-200 text-xs font-semibold rounded-lg transition-all text-[var(--text-primary)] border border-[var(--border-color)]">Refresh</button>
+          </div>
+
+          {solLoading ? (
+            <div className="flex items-center justify-center py-10">
+              <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-pink-500"></div>
+            </div>
+          ) : (
+            <>
+              {/* YEAR LEVEL */}
+              {!editingYearId && (
+                <div className="space-y-3">
+                  {solData.years.length === 0 && <p className="text-xs text-[var(--text-secondary)] italic text-center py-4">No years defined. Add one below.</p>}
+                  {solData.years.map((year) => (
+                    <div key={year.id} className="flex items-center justify-between p-3 rounded-xl bg-[var(--bg-secondary)]/50 border border-[var(--border-color)]">
+                      <div>
+                        <p className="text-sm font-bold text-[var(--text-primary)]">{year.label}</p>
+                        <p className="text-[10px] text-[var(--text-secondary)]">{year.desc}</p>
+                      </div>
+                      <div className="flex space-x-2">
+                        <button onClick={() => { setEditingYearId(year.id); setEditingSemId(null); }} className="px-3 py-1.5 bg-pink-600 text-white text-xs font-bold rounded-lg hover:bg-pink-700 transition-all">Manage</button>
+                        <button onClick={() => {
+                          const newData = { ...solData, years: solData.years.filter(y => y.id !== year.id) };
+                          saveSolDatabase(newData);
+                        }} className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-lg transition-all"><Trash className="h-4 w-4" /></button>
+                      </div>
+                    </div>
+                  ))}
+                  <button onClick={() => { setShowAddYear(!showAddYear); setNewYearLabel(''); setNewYearDesc(''); }} className="w-full py-2 border-2 border-dashed border-[var(--border-color)] rounded-xl text-xs font-bold text-pink-600 hover:bg-[var(--bg-secondary)]/50 transition-all flex items-center justify-center space-x-1.5">
+                    <Plus className="h-3.5 w-3.5" /><span>Add Year</span>
+                  </button>
+                  {showAddYear && (
+                    <div className="p-4 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] space-y-3">
+                      <input type="text" placeholder="Year label (e.g. 1st Year)" value={newYearLabel} onChange={(e) => setNewYearLabel(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--card-bg)] text-xs focus:outline-none focus:ring-1 focus:ring-pink-500 text-[var(--text-primary)]" />
+                      <input type="text" placeholder="Description (e.g. Foundation courses)" value={newYearDesc} onChange={(e) => setNewYearDesc(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--card-bg)] text-xs focus:outline-none focus:ring-1 focus:ring-pink-500 text-[var(--text-primary)]" />
+                      <button onClick={() => {
+                        if (!newYearLabel.trim()) return;
+                        const newData = { ...solData, years: [...solData.years, { id: Date.now(), label: newYearLabel.trim(), desc: newYearDesc.trim(), semesters: [] }] };
+                        saveSolDatabase(newData);
+                        setShowAddYear(false);
+                      }} className="w-full py-2 bg-pink-600 text-white text-xs font-bold rounded-lg hover:bg-pink-700 transition-all">Create Year</button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* SEMESTER LEVEL */}
+              {editingYearId && !editingSemId && (
+                <div className="space-y-3">
+                  {solData.years.find(y => y.id === editingYearId)?.semesters.length === 0 && <p className="text-xs text-[var(--text-secondary)] italic text-center py-4">No semesters defined. Add one below.</p>}
+                  {solData.years.find(y => y.id === editingYearId)?.semesters.map((sem) => (
+                    <div key={sem.id} className="flex items-center justify-between p-3 rounded-xl bg-[var(--bg-secondary)]/50 border border-[var(--border-color)]">
+                      <div>
+                        <p className="text-sm font-bold text-[var(--text-primary)]">{sem.label}</p>
+                        <p className="text-[10px] text-[var(--text-secondary)]">{sem.desc}</p>
+                      </div>
+                      <div className="flex space-x-2">
+                        <button onClick={() => setEditingSemId(sem.id)} className="px-3 py-1.5 bg-pink-600 text-white text-xs font-bold rounded-lg hover:bg-pink-700 transition-all">Manage</button>
+                        <button onClick={() => {
+                          const newData = { ...solData, years: solData.years.map(y => y.id === editingYearId ? { ...y, semesters: y.semesters.filter(s => s.id !== sem.id) } : y) };
+                          saveSolDatabase(newData);
+                        }} className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-lg transition-all"><Trash className="h-4 w-4" /></button>
+                      </div>
+                    </div>
+                  ))}
+                  <button onClick={() => { setShowAddSem(!showAddSem); setNewSemLabel(''); setNewSemDesc(''); }} className="w-full py-2 border-2 border-dashed border-[var(--border-color)] rounded-xl text-xs font-bold text-pink-600 hover:bg-[var(--bg-secondary)]/50 transition-all flex items-center justify-center space-x-1.5">
+                    <Plus className="h-3.5 w-3.5" /><span>Add Semester</span>
+                  </button>
+                  {showAddSem && (
+                    <div className="p-4 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] space-y-3">
+                      <input type="text" placeholder="Semester label (e.g. Semester 1)" value={newSemLabel} onChange={(e) => setNewSemLabel(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--card-bg)] text-xs focus:outline-none focus:ring-1 focus:ring-pink-500 text-[var(--text-primary)]" />
+                      <input type="text" placeholder="Description (e.g. Mathematics, Physics)" value={newSemDesc} onChange={(e) => setNewSemDesc(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--card-bg)] text-xs focus:outline-none focus:ring-1 focus:ring-pink-500 text-[var(--text-primary)]" />
+                      <button onClick={() => {
+                        if (!newSemLabel.trim()) return;
+                        const newData = { ...solData, years: solData.years.map(y => y.id === editingYearId ? { ...y, semesters: [...y.semesters, { id: 'sem-' + Date.now(), label: newSemLabel.trim(), desc: newSemDesc.trim(), subjects: [] }] } : y) };
+                        saveSolDatabase(newData);
+                        setShowAddSem(false);
+                      }} className="w-full py-2 bg-pink-600 text-white text-xs font-bold rounded-lg hover:bg-pink-700 transition-all">Create Semester</button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* SUBJECT LEVEL */}
+              {editingYearId && editingSemId && (
+                <div className="space-y-3">
+                  {(() => {
+                    const sem = solData.years.find(y => y.id === editingYearId)?.semesters.find(s => s.id === editingSemId);
+                    if (!sem) return <p className="text-xs text-[var(--text-secondary)] italic">Semester not found.</p>;
+                    return (
+                      <>
+                        {sem.subjects.length === 0 && <p className="text-xs text-[var(--text-secondary)] italic text-center py-4">No subjects added yet.</p>}
+                        {sem.subjects.map((subj, idx) => (
+                          <div key={idx} className="rounded-xl bg-[var(--bg-secondary)]/50 border border-[var(--border-color)] overflow-hidden">
+                            <div className="flex items-center justify-between p-3">
+                              <div className="min-w-0 flex-1 mr-3">
+                                <p className="text-sm font-bold text-[var(--text-primary)]">{subj.name}</p>
+                                <p className="text-[10px] text-[var(--text-secondary)]">{subj.desc}</p>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <button onClick={() => setExpandedSubj(expandedSubj === idx ? null : idx)}
+                                  className="px-2.5 py-1 bg-[var(--card-bg)] text-xs font-semibold rounded-lg hover:bg-pink-200 transition-all text-[var(--text-primary)] border border-[var(--border-color)]">
+                                  Docs ({(subj.documents || []).length})
+                                </button>
+                                <button onClick={() => {
+                                  const newData = { ...solData, years: solData.years.map(y => y.id === editingYearId ? { ...y, semesters: y.semesters.map(s => s.id === editingSemId ? { ...s, subjects: s.subjects.filter((_, i) => i !== idx) } : s) } : y) };
+                                  saveSolDatabase(newData);
+                                }} className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-lg transition-all flex-shrink-0"><Trash className="h-4 w-4" /></button>
+                              </div>
+                            </div>
+                            {/* DOCUMENTS INSIDE SUBJECT */}
+                            {expandedSubj === idx && (
+                              <div className="border-t border-[var(--border-color)] px-3 py-3 space-y-2 bg-[var(--card-bg)]/50">
+                                {(subj.documents || []).length === 0 && (
+                                  <p className="text-[10px] text-[var(--text-secondary)] italic">No documents yet.</p>
+                                )}
+                                {(subj.documents || []).map((doc, di) => (
+                                  <div key={di} className="flex items-center justify-between py-1.5 px-2 rounded-lg bg-[var(--bg-secondary)]/50">
+                                    <div className="flex items-center space-x-2 min-w-0 flex-1 mr-2">
+                                      {doc.type === 'file' ? <FileText className="h-3.5 w-3.5 text-pink-500 flex-shrink-0" /> : <Link className="h-3.5 w-3.5 text-pink-500 flex-shrink-0" />}
+                                      <div className="min-w-0">
+                                        <p className="text-xs font-semibold text-[var(--text-primary)] truncate">{doc.name || doc.filename || 'Document'}</p>
+                                        <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-[9px] text-pink-600 hover:underline truncate block">{doc.url}</a>
+                                      </div>
+                                    </div>
+                                    <button onClick={() => {
+                                      const newDocs = (subj.documents || []).filter((_, i) => i !== di);
+                                      const newData = { ...solData, years: solData.years.map(y => y.id === editingYearId ? { ...y, semesters: y.semesters.map(s => s.id === editingSemId ? { ...s, subjects: s.subjects.map((sb, i) => i === idx ? { ...sb, documents: newDocs } : sb) } : s) } : y) };
+                                      saveSolDatabase(newData);
+                                    }} className="p-1 text-red-500 hover:bg-red-500/10 rounded transition-all flex-shrink-0"><Trash className="h-3 w-3" /></button>
+                                  </div>
+                                ))}
+                                {/* Add Document Form */}
+                                {showAddDoc !== idx && (
+                                  <button onClick={() => { setShowAddDoc(idx); setDocType('file'); setNewDocName(''); setNewDocUrl(''); setNewDocFile(null); }}
+                                    className="w-full py-1.5 border border-dashed border-[var(--border-color)] rounded-lg text-[10px] font-bold text-pink-600 hover:bg-[var(--bg-secondary)]/50 transition-all flex items-center justify-center space-x-1">
+                                    <Plus className="h-3 w-3" /><span>Add Document</span>
+                                  </button>
+                                )}
+                                {showAddDoc === idx && (
+                                  <div className="p-3 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] space-y-2.5">
+                                    <p className="text-[10px] font-bold text-[var(--text-secondary)]">New Document</p>
+                                    <input type="text" placeholder="Document name" value={newDocName} onChange={(e) => setNewDocName(e.target.value)}
+                                      className="w-full px-2.5 py-1.5 rounded-lg border border-[var(--border-color)] bg-[var(--card-bg)] text-[11px] focus:outline-none focus:ring-1 focus:ring-pink-500 text-[var(--text-primary)]" />
+                                    <div className="flex space-x-2">
+                                      <button onClick={() => setDocType('file')}
+                                        className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold flex items-center justify-center space-x-1 transition-all ${docType === 'file' ? 'bg-pink-600 text-white' : 'bg-[var(--card-bg)] text-[var(--text-secondary)] border border-[var(--border-color)]'}`}>
+                                        <Upload className="h-3 w-3" /><span>Upload File</span>
+                                      </button>
+                                      <button onClick={() => setDocType('link')}
+                                        className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold flex items-center justify-center space-x-1 transition-all ${docType === 'link' ? 'bg-pink-600 text-white' : 'bg-[var(--card-bg)] text-[var(--text-secondary)] border border-[var(--border-color)]'}`}>
+                                        <Link className="h-3 w-3" /><span>External Link</span>
+                                      </button>
+                                    </div>
+                                    {docType === 'file' ? (
+                                      <div>
+                                        <input type="file" onChange={(e) => setNewDocFile(e.target.files[0])}
+                                          className="w-full text-[10px] file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-pink-600 file:text-white hover:file:bg-pink-700 file:cursor-pointer text-[var(--text-secondary)]" />
+                                      </div>
+                                    ) : (
+                                      <input type="text" placeholder="https://drive.google.com/..." value={newDocUrl} onChange={(e) => setNewDocUrl(e.target.value)}
+                                        className="w-full px-2.5 py-1.5 rounded-lg border border-[var(--border-color)] bg-[var(--card-bg)] text-[11px] focus:outline-none focus:ring-1 focus:ring-pink-500 text-[var(--text-primary)]" />
+                                    )}
+                                    <div className="flex space-x-2">
+                                      <button onClick={() => setShowAddDoc(null)}
+                                        className="flex-1 py-1.5 rounded-lg text-[10px] font-bold bg-[var(--card-bg)] text-[var(--text-secondary)] border border-[var(--border-color)] hover:bg-[var(--bg-secondary)] transition-all">Cancel</button>
+                                      <button onClick={async () => {
+                                        try {
+                                          if (!newDocName.trim()) { showToast('Please enter a document name.', 'error'); return; }
+                                          let url = newDocUrl.trim();
+                                          let filename = '';
+                                          if (docType === 'file') {
+                                            if (!newDocFile) { showToast('Please select a file to upload.', 'error'); return; }
+                                            setDocUploading(true);
+                                            const formData = new FormData();
+                                            formData.append('file', newDocFile);
+                                            const res = await fetch('/api/admin/soldatabase/upload', {
+                                              method: 'POST',
+                                              headers: { 'x-admin-token': localStorage.getItem('adminToken') },
+                                              body: formData
+                                            });
+                                            const data = await res.json();
+                                            if (!res.ok) throw new Error(data.error || 'Upload failed');
+                                            url = data.url;
+                                            filename = data.filename;
+                                            setDocUploading(false);
+                                          }
+                                          const doc = { name: newDocName.trim(), type: docType, url, filename };
+                                          const existingDocs = subj.documents || [];
+                                          const newData = { ...solData, years: solData.years.map(y => y.id === editingYearId ? { ...y, semesters: y.semesters.map(s => s.id === editingSemId ? { ...s, subjects: s.subjects.map((sb, i) => i === idx ? { ...sb, documents: [...existingDocs, doc] } : sb) } : s) } : y) };
+                                          saveSolDatabase(newData);
+                                          setShowAddDoc(null); setNewDocName(''); setNewDocUrl(''); setNewDocFile(null);
+                                        } catch (err) {
+                                          showToast('Error: ' + err.message, 'error');
+                                          setDocUploading(false);
+                                        }
+                                      }} disabled={docUploading}
+                                        className="flex-1 py-1.5 rounded-lg text-[10px] font-bold bg-pink-600 text-white hover:bg-pink-700 transition-all disabled:opacity-50">
+                                        {docUploading ? 'Uploading...' : 'Add Document'}
+                                      </button>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                        <div className="p-4 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] space-y-3">
+                          <p className="text-xs font-bold text-[var(--text-secondary)]">Add Subject</p>
+                          <input type="text" placeholder="Subject name" value={newSubjectName} onChange={(e) => setNewSubjectName(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--card-bg)] text-xs focus:outline-none focus:ring-1 focus:ring-pink-500 text-[var(--text-primary)]" />
+                          <input type="text" placeholder="Description (optional)" value={newSubjectDesc} onChange={(e) => setNewSubjectDesc(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--card-bg)] text-xs focus:outline-none focus:ring-1 focus:ring-pink-500 text-[var(--text-primary)]" />
+                          <button onClick={() => {
+                            if (!newSubjectName.trim()) return;
+                            const newData = { ...solData, years: solData.years.map(y => y.id === editingYearId ? { ...y, semesters: y.semesters.map(s => s.id === editingSemId ? { ...s, subjects: [...s.subjects, { name: newSubjectName.trim(), desc: newSubjectDesc.trim(), documents: [] }] } : s) } : y) };
+                            saveSolDatabase(newData);
+                            setNewSubjectName(''); setNewSubjectDesc('');
+                          }} className="w-full py-2 bg-pink-600 text-white text-xs font-bold rounded-lg hover:bg-pink-700 transition-all">Add Subject</button>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+              )}
+            </>
+          )}
+        </div>
       )}
 
       {/* DELETE MODAL */}

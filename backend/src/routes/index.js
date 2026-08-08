@@ -44,6 +44,7 @@ router.post('/pdf/office-convert', uploadAny, pdfController.officeConverter);
 
 // --- Academic Routes ---
 router.get('/academic/config', calcController.getCalcConfig);
+router.get('/soldatabase', require('../controllers/soldatabaseController').getSolDatabase);
 
 // --- Compression Routes ---
 router.post('/compress/image', uploadSingleImage, compressController.compressUploadedImage);
@@ -57,6 +58,12 @@ router.post('/admin/visitor', adminController.logVisitor);
 router.get('/admin/analytics', verifyAdminToken, adminController.getAnalytics);
 router.post('/admin/settings', verifyAdminToken, adminController.updateSetting);
 router.delete('/admin/feedback/:id', verifyAdminToken, adminController.deleteFeedback);
+router.post('/admin/soldatabase/upload', verifyAdminToken, (req, res, next) => {
+  uploadAny(req, res, (err) => {
+    if (err) return res.status(400).json({ error: err.message || 'File upload failed.' });
+    next();
+  });
+}, require('../controllers/soldatabaseController').uploadDocument);
 
 // --- Interview Routes ---
 router.post('/interview/generate-questions', interviewController.generateQuestions);
