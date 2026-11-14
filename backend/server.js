@@ -29,12 +29,6 @@ app.use(express.urlencoded({ limit: '20mb', extended: true }));
 // Serve static assets if any (e.g., templates or preview uploads)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Temporary debug endpoint to trace incoming POST requests
-app.post('/api/debug', (req, res) => {
-  console.log('DEBUG REQ', req.method, req.originalUrl, 'headers:', JSON.stringify(req.headers));
-  res.json({ ok: true });
-});
-
 // Direct resume PDF endpoint (bypasses router) to verify generation
 const careerController = require('./src/controllers/careerController');
 app.post('/resume/pdf', careerController.generateResumePdf);
